@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Style Maker ✨</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 30px;
+}
+
+.container {
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    background: black;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.preview-section {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 30px;
+    gap: 40px;
+}
+
+.image-preview {
+    max-width: 300px;
+}
+
+.image-preview img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+.recommendation {
+    width: 300px;
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.8s ease;
+}
+
+.recommendation.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.model-review {
+    margin-top: 15px;
+}
+
+.model-review img {
+    width: 150px;
+    border-radius: 12px;
+}
+
+.color-theory {
+    margin-top: 20px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
+</head>
+<body>
+
+<h1>Style Maker ✨</h1>
+
+<div class="container">
+    <button onclick="openCamera()">Open Camera</button>
+    <input type="file" id="upload" accept="image/*" hidden>
+    <button onclick="document.getElementById('upload').click()">Upload Picture</button>
+</div>
+
+<div class="preview-section">
+    <div class="image-preview">
+        <img id="previewImage" src="">
+        <div class="color-theory" id="colorTheory"></div>
+    </div>
+
+    <div class="recommendation" id="recommendationBox">
+        <h3>Recommended Style</h3>
+        <p id="recommendText"></p>
+
+        <div class="model-review">
+            <img src="https://i.imgur.com/8Km9tLL.png">
+            <p>"This combo gives clean and confident vibes."</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const uploadInput = document.getElementById("upload");
+const previewImage = document.getElementById("previewImage");
+const recommendationBox = document.getElementById("recommendationBox");
+const colorTheory = document.getElementById("colorTheory");
+const recommendText = document.getElementById("recommendText");
+
+uploadInput.addEventListener("change", function(event){
+    const file = event.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            previewImage.src = e.target.result;
+            simulateAIResult();
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+function openCamera(){
+    alert("Camera integration will connect with AI model here.");
+}
+
+function simulateAIResult(){
+    // Nanti ini diganti pakai hasil dari model AI kamu
+    const detectedColor = Math.random() > 0.5 ? "black" : "white";
+
+    if(detectedColor === "black"){
+        colorTheory.innerHTML = `
+        <h3>Black Outfit Meaning</h3>
+        <p>Black represents elegance, power, and mystery. It works well for minimalist,
+        formal, and modern street style contexts.</p>
+        `;
+        recommendText.innerHTML = `
+        Pants: Grey slim fit<br>
+        Hat: Black bucket hat<br>
+        Shoes: White sneakers<br>
+        Mask: Matte black<br>
+        `;
+    } else {
+        colorTheory.innerHTML = `
+        <h3>White Outfit Meaning</h3>
+        <p>White represents purity, simplicity, and clarity. Perfect for summer looks,
+        casual clean aesthetics, and soft minimal fashion.</p>
+        `;
+        recommendText.innerHTML = `
+        Pants: Light blue jeans<br>
+        Hat: Beige cap<br>
+        Shoes: Cream sneakers<br>
+        Mask: Soft white<br>
+        `;
+    }
+
+    recommendationBox.classList.add("show");
+}
+</script>
+
+</html>
+
+<body style="background:black;color:white;text-align:center;">
+<h1>Style Maker ✨</h1>
+<h2>AI loading...</h2>
+</body>
+
+
