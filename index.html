@@ -18,7 +18,6 @@ body{
 }
 
 /* intro screen */
-
 #intro{
     position:fixed;
     top:0;
@@ -34,17 +33,16 @@ body{
     z-index:10;
 }
 
+/* image fade */
 #previewImage{
     opacity:0;
     transition:0.5s;
 }
-
 #previewImage.show{
     opacity:1;
 }
 
 /* main layout */
-
 .container{
     position:absolute;
     top:50%;
@@ -54,7 +52,6 @@ body{
 }
 
 /* glass panel */
-
 .panel{
     background:rgba(255,255,255,0.15);
     backdrop-filter: blur(20px);
@@ -82,7 +79,6 @@ button{
     font-weight:bold;
     transition:0.3s;
 }
-
 button:hover{
     transform:scale(1.05);
 }
@@ -112,7 +108,6 @@ button:hover{
     transform:translateX(100px);
     transition:0.8s;
 }
-
 .recommendation.show{
     opacity:1;
     transform:translateX(0);
@@ -132,6 +127,14 @@ button:hover{
     animation: blink 1.5s infinite;
 }
 
+#colorTheory h3{
+    margin-bottom:5px;
+}
+#colorTheory p{
+    margin:3px 0;
+    font-size:13px;
+}
+
 @keyframes blink{
     0%{opacity:0.3;}
     50%{opacity:1;}
@@ -142,6 +145,7 @@ button:hover{
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+<script src="colorTheory.js"></script>
 
 </head>
 
@@ -149,8 +153,16 @@ button:hover{
 
 <!-- intro -->
 <div id="intro" onclick="startApp()">
-<h1>Made by Kelompok 5</h1>
-<p style="margin-top:30px">Click to start</p>
+<h1>Kelompok 5</h1>
+<div style="line-height:1.8; margin-top:15px;">
+- Regina Maheswari Nathania (35)<br>
+- Mirelle Naurin Rasya (22)<br>
+- Naumira Farras Sakhi (30)<br>
+- Muhammad Naufal Ikram (26)<br>
+- Muhammad Quraisy Dhinezad (28)<br>
+- Zidane Muhammad Faris (39)
+</div>
+<p style="margin-top:30px; opacity:0.7;">klik untuk lanjut</p>
 </div>
 
 <!-- main web -->
@@ -221,8 +233,11 @@ uploadInput.addEventListener("change", function(event){
 
         reader.onload = function(e){
             previewImage.src = e.target.result
-            previewImage.classList.add("show")
-            simulateAI()
+
+            previewImage.onload = function(){
+                previewImage.classList.add("show")
+                simulateAI()
+            }
         }
 
         reader.readAsDataURL(file)
@@ -264,17 +279,20 @@ async function simulateAI(){
     let color = bestColor.className;
     let outfit = bestOutfit.className;
 
+    const theory = getColorTheory(color);
+
     colorTheory.innerHTML = `
-    <h3>${color} - ${outfit}</h3>
-    <p>Color Confidence: ${(bestColor.probability*100).toFixed(1)}%</p>
-    <p>Outfit Confidence: ${(bestOutfit.probability*100).toFixed(1)}%</p>
+    <h3>${theory.title} - ${outfit}</h3>
+    <p>${theory.desc}</p>
+    <p>Color: ${(bestColor.probability*100).toFixed(1)}%</p>
+    <p>Outfit: ${(bestOutfit.probability*100).toFixed(1)}%</p>
     `;
 
     if(color=="black"){
-        recommendText.innerHTML=`Grey/Black pants, White sneakers, Beanie, Black mask`;
+        recommendText.innerHTML=`Grey/Black pants, White sneakers, Beanie`;
     }
     else if(color=="white"){
-        recommendText.innerHTML=`Light jeans, White sneakers, Beige cap, White mask`;
+        recommendText.innerHTML=`Light jeans, White sneakers, Beige cap`;
     }
     else if(color=="blue"){
         recommendText.innerHTML=`Black jeans, White sneakers, Navy cap`;
