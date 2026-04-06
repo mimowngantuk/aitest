@@ -34,13 +34,13 @@ body{
     z-index:10;
 }
 
-#intro h1{
-    font-size:28px;
-    margin-bottom:20px;
+#previewImage{
+    opacity:0;
+    transition:0.5s;
 }
 
-#intro p{
-    opacity:0.8;
+#previewImage.show{
+    opacity:1;
 }
 
 /* main layout */
@@ -56,27 +56,21 @@ body{
 /* glass panel */
 
 .panel{
-    background:rgba(255,255,255,0.25);
-    backdrop-filter: blur(10px);
+    background:rgba(255,255,255,0.15);
+    backdrop-filter: blur(20px);
     padding:40px;
     border-radius:30px;
     transform:skewX(-8deg);
+    border:1px solid rgba(255,255,255,0.3);
+    box-shadow:0 20px 40px rgba(0,0,0,0.25);
 }
 
 /* fix skew text */
-
 .panel *{
     transform:skewX(8deg);
 }
 
-/* title */
-
-h1{
-    margin-bottom:20px;
-}
-
 /* buttons */
-
 button{
     padding:12px 25px;
     margin:10px;
@@ -94,7 +88,6 @@ button:hover{
 }
 
 /* preview section */
-
 .preview-section{
     display:flex;
     gap:40px;
@@ -103,14 +96,16 @@ button:hover{
 }
 
 /* image preview */
-
 .image-preview img{
     width:250px;
-    border-radius:20px;
+    border-radius:25px;
+    margin-top:10px;
+    transform:skewX(8deg);
+    object-fit:cover;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
 /* recommendation box */
-
 .recommendation{
     width:250px;
     opacity:0;
@@ -123,12 +118,24 @@ button:hover{
     transform:translateX(0);
 }
 
-/* model preview */
-
 .model-review img{
     width:120px;
     border-radius:15px;
     margin-top:10px;
+}
+
+/* loading text */
+#loadingText{
+    font-size:12px;
+    opacity:0.8;
+    margin-top:10px;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink{
+    0%{opacity:0.3;}
+    50%{opacity:1;}
+    100%{opacity:0.3;}
 }
 
 </style>
@@ -143,15 +150,7 @@ button:hover{
 <!-- intro -->
 <div id="intro" onclick="startApp()">
 <h1>Made by Kelompok 5</h1>
-<div>
-Regina Maheswari Nathania (35)<br>
-Mirelle Naurin Rasya (22)<br>
-Naumira Farras Sakhi (30)<br>
-Muhammad Naufal Ikram (26)<br>
-Muhammad Quraisy Dhinezad (28)<br>
-Zidane Muhammad Faris (39)
-</div>
-<p style="margin-top:30px">ketik untuk lanjut</p>
+<p style="margin-top:30px">Click to start</p>
 </div>
 
 <!-- main web -->
@@ -176,11 +175,16 @@ Upload Picture
 <div class="recommendation" id="recommendationBox">
 <h3>Recommended Style</h3>
 <p id="recommendText"></p>
+
 <div class="model-review">
 <img src="https://i.imgur.com/8Km9tLL.png">
 </div>
+
+<div id="loadingText" style="display:none;">
+Analyzing outfit...
 </div>
 
+</div>
 </div>
 </div>
 </div>
@@ -190,14 +194,12 @@ Upload Picture
 let colorModel, outfitModel;
 let modelsReady = false;
 
-async function loadModels(){
+window.onload = async function(){
     colorModel = await tmImage.load("color/model.json", "color/metadata.json");
     outfitModel = await tmImage.load("outfit/model.json", "outfit/metadata.json");
     modelsReady = true;
     console.log("Models Loaded");
 }
-
-loadModels();
 
 function startApp(){
     document.getElementById("intro").style.display="none"
@@ -208,23 +210,23 @@ const previewImage = document.getElementById("previewImage")
 const recommendationBox = document.getElementById("recommendationBox")
 const colorTheory = document.getElementById("colorTheory")
 const recommendText = document.getElementById("recommendText")
+const loadingText = document.getElementById("loadingText")
 
 uploadInput.addEventListener("change", function(event){
 
     const file = event.target.files[0]
 
     if(file){
-
         const reader = new FileReader()
 
         reader.onload = function(e){
             previewImage.src = e.target.result
+            previewImage.classList.add("show")
             simulateAI()
         }
 
         reader.readAsDataURL(file)
     }
-
 })
 
 function openCamera(){
@@ -238,10 +240,13 @@ async function simulateAI(){
         return;
     }
 
+    loadingText.style.display="block";
+
     const predictionColor = await colorModel.predict(previewImage);
     const predictionOutfit = await outfitModel.predict(previewImage);
 
-    // best color
+    loadingText.style.display="none";
+
     let bestColor = predictionColor[0];
     for(let i=1; i<predictionColor.length; i++){
         if(predictionColor[i].probability > bestColor.probability){
@@ -249,7 +254,6 @@ async function simulateAI(){
         }
     }
 
-    // best outfit
     let bestOutfit = predictionOutfit[0];
     for(let i=1; i<predictionOutfit.length; i++){
         if(predictionOutfit[i].probability > bestOutfit.probability){
@@ -260,66 +264,29 @@ async function simulateAI(){
     let color = bestColor.className;
     let outfit = bestOutfit.className;
 
-    // confidence display
     colorTheory.innerHTML = `
     <h3>${color} - ${outfit}</h3>
     <p>Color Confidence: ${(bestColor.probability*100).toFixed(1)}%</p>
     <p>Outfit Confidence: ${(bestOutfit.probability*100).toFixed(1)}%</p>
     `;
 
-    // recommendation by color
     if(color=="black"){
-        recommendText.innerHTML=`
-        Pants : Grey / Black<br>
-        Shoes : White sneakers<br>
-        Hat : Beanie<br>
-        Mask : Black
-        `;
+        recommendText.innerHTML=`Grey/Black pants, White sneakers, Beanie, Black mask`;
     }
-
     else if(color=="white"){
-        recommendText.innerHTML=`
-        Pants : Light blue jeans<br>
-        Shoes : White sneakers<br>
-        Hat : Beige cap<br>
-        Mask : White
-        `;
+        recommendText.innerHTML=`Light jeans, White sneakers, Beige cap, White mask`;
     }
-
     else if(color=="blue"){
-        recommendText.innerHTML=`
-        Pants : Black jeans<br>
-        Shoes : White sneakers<br>
-        Hat : Navy cap<br>
-        Mask : Dark
-        `;
+        recommendText.innerHTML=`Black jeans, White sneakers, Navy cap`;
     }
-
     else if(color=="yellow"){
-        recommendText.innerHTML=`
-        Pants : Black / Brown<br>
-        Shoes : White sneakers<br>
-        Hat : Neutral cap<br>
-        Mask : Light
-        `;
+        recommendText.innerHTML=`Black/Brown pants, White sneakers`;
     }
-
     else if(color=="pink"){
-        recommendText.innerHTML=`
-        Pants : White / Light grey<br>
-        Shoes : Clean sneakers<br>
-        Hat : Soft tone cap<br>
-        Mask : White / Pink
-        `;
+        recommendText.innerHTML=`White/Light grey pants, Clean sneakers`;
     }
-
     else{
-        recommendText.innerHTML=`
-        Pants : Neutral pants<br>
-        Shoes : Sneakers<br>
-        Hat : Cap<br>
-        Mask : Match color
-        `;
+        recommendText.innerHTML=`Neutral outfit`;
     }
 
     recommendationBox.classList.add("show");
