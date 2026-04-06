@@ -3,173 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <title>Style Maker ✨</title>
+
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    text-align: center;
+
+body{
+    margin:0;
+    font-family: "Segoe UI", sans-serif;
+    color:white;
+    background:url("wallpaper.jpg");
+    background-size:cover;
+    background-position:center;
+    height:100vh;
+    overflow:hidden;
 }
 
-h1 {
-    margin-top: 30px;
+/* intro screen */
+
+#intro{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.8);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    z-index:10;
 }
 
-.container {
-    margin-top: 20px;
+#intro h1{
+    font-size:28px;
+    margin-bottom:20px;
 }
 
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    cursor: pointer;
-    border-radius: 8px;
-    background: black;
-    color: white;
-    font-weight: bold;
+#intro p{
+    opacity:0.8;
 }
 
-button:hover {
-    opacity: 0.8;
+/* main layout */
+
+.container{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
 }
 
-.preview-section {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    margin-top: 30px;
-    gap: 40px;
+/* glass panel */
+
+.panel{
+    background:rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    padding:40px;
+    border-radius:30px;
+    transform:skewX(-8deg);
 }
 
-.image-preview {
-    max-width: 300px;
+/* fix skew text */
+
+.panel *{
+    transform:skewX(8deg);
 }
 
-.image-preview img {
-    width: 100%;
-    border-radius: 12px;
+/* title */
+
+h1{
+    margin-bottom:20px;
 }
 
-.recommendation {
-    width: 300px;
-    opacity: 0;
-    transform: translateX(100px);
-    transition: all 0.8s ease;
+/* buttons */
+
+button{
+    padding:12px 25px;
+    margin:10px;
+    border:none;
+    border-radius:25px;
+    cursor:pointer;
+    background:rgba(255,255,255,0.7);
+    color:#333;
+    font-weight:bold;
+    transition:0.3s;
 }
 
-.recommendation.show {
-    opacity: 1;
-    transform: translateX(0);
+button:hover{
+    transform:scale(1.05);
 }
 
-.model-review {
-    margin-top: 15px;
+/* preview section */
+
+.preview-section{
+    display:flex;
+    gap:40px;
+    margin-top:30px;
+    justify-content:center;
 }
 
-.model-review img {
-    width: 150px;
-    border-radius: 12px;
+/* image preview */
+
+.image-preview img{
+    width:250px;
+    border-radius:20px;
 }
 
-.color-theory {
-    margin-top: 20px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+/* recommendation box */
+
+.recommendation{
+    width:250px;
+    opacity:0;
+    transform:translateX(100px);
+    transition:0.8s;
 }
+
+.recommendation.show{
+    opacity:1;
+    transform:translateX(0);
+}
+
+/* model preview */
+
+.model-review img{
+    width:120px;
+    border-radius:15px;
+    margin-top:10px;
+}
+
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+
 </head>
+
 <body>
 
-<h1>Style Maker ✨</h1>
-
-<div class="container">
-    <button onclick="openCamera()">Open Camera</button>
-    <input type="file" id="upload" accept="image/*" hidden>
-    <button onclick="document.getElementById('upload').click()">Upload Picture</button>
+<!-- intro -->
+<div id="intro" onclick="startApp()">
+<h1>Made by Kelompok 5</h1>
+<div>
+Regina Maheswari Nathania (35)<br>
+Mirelle Naurin Rasya (22)<br>
+Naumira Farras Sakhi (30)<br>
+Muhammad Naufal Ikram (26)<br>
+Muhammad Quraisy Dhinezad (28)<br>
+Zidane Muhammad Faris (39)
+</div>
+<p style="margin-top:30px">ketik untuk lanjut</p>
 </div>
 
+<!-- main web -->
+<div class="container">
+<div class="panel">
+<h1>Style Maker ✨</h1>
+
+<button onclick="openCamera()">Open Camera</button>
+
+<input type="file" id="upload" accept="image/*" hidden>
+<button onclick="document.getElementById('upload').click()">
+Upload Picture
+</button>
+
 <div class="preview-section">
-    <div class="image-preview">
-        <img id="previewImage" src="">
-        <div class="color-theory" id="colorTheory"></div>
-    </div>
 
-    <div class="recommendation" id="recommendationBox">
-        <h3>Recommended Style</h3>
-        <p id="recommendText"></p>
+<div class="image-preview">
+<img id="previewImage">
+<div id="colorTheory"></div>
+</div>
 
-        <div class="model-review">
-            <img src="https://i.imgur.com/8Km9tLL.png">
-            <p>"This combo gives clean and confident vibes."</p>
-        </div>
-    </div>
+<div class="recommendation" id="recommendationBox">
+<h3>Recommended Style</h3>
+<p id="recommendText"></p>
+<div class="model-review">
+<img src="https://i.imgur.com/8Km9tLL.png">
+</div>
+</div>
+
+</div>
+</div>
 </div>
 
 <script>
-const uploadInput = document.getElementById("upload");
-const previewImage = document.getElementById("previewImage");
-const recommendationBox = document.getElementById("recommendationBox");
-const colorTheory = document.getElementById("colorTheory");
-const recommendText = document.getElementById("recommendText");
 
-uploadInput.addEventListener("change", function(event){
-    const file = event.target.files[0];
-    if(file){
-        const reader = new FileReader();
-        reader.onload = function(e){
-            previewImage.src = e.target.result;
-            simulateAIResult();
-        }
-        reader.readAsDataURL(file);
-    }
-});
+let colorModel, outfitModel;
+let modelsReady = false;
 
-function openCamera(){
-    alert("Camera integration will connect with AI model here.");
+async function loadModels(){
+    colorModel = await tmImage.load("color/model.json", "color/metadata.json");
+    outfitModel = await tmImage.load("outfit/model.json", "outfit/metadata.json");
+    modelsReady = true;
+    console.log("Models Loaded");
 }
 
-function simulateAIResult(){
-    // Nanti ini diganti pakai hasil dari model AI kamu
-    const detectedColor = Math.random() > 0.5 ? "black" : "white";
+loadModels();
 
-    if(detectedColor === "black"){
-        colorTheory.innerHTML = `
-        <h3>Black Outfit Meaning</h3>
-        <p>Black represents elegance, power, and mystery. It works well for minimalist,
-        formal, and modern street style contexts.</p>
+function startApp(){
+    document.getElementById("intro").style.display="none"
+}
+
+const uploadInput = document.getElementById("upload")
+const previewImage = document.getElementById("previewImage")
+const recommendationBox = document.getElementById("recommendationBox")
+const colorTheory = document.getElementById("colorTheory")
+const recommendText = document.getElementById("recommendText")
+
+uploadInput.addEventListener("change", function(event){
+
+    const file = event.target.files[0]
+
+    if(file){
+
+        const reader = new FileReader()
+
+        reader.onload = function(e){
+            previewImage.src = e.target.result
+            simulateAI()
+        }
+
+        reader.readAsDataURL(file)
+    }
+
+})
+
+function openCamera(){
+    alert("camera feature coming soon")
+}
+
+async function simulateAI(){
+
+    if(!modelsReady){
+        alert("Model masih loading...");
+        return;
+    }
+
+    const predictionColor = await colorModel.predict(previewImage);
+    const predictionOutfit = await outfitModel.predict(previewImage);
+
+    // best color
+    let bestColor = predictionColor[0];
+    for(let i=1; i<predictionColor.length; i++){
+        if(predictionColor[i].probability > bestColor.probability){
+            bestColor = predictionColor[i];
+        }
+    }
+
+    // best outfit
+    let bestOutfit = predictionOutfit[0];
+    for(let i=1; i<predictionOutfit.length; i++){
+        if(predictionOutfit[i].probability > bestOutfit.probability){
+            bestOutfit = predictionOutfit[i];
+        }
+    }
+
+    let color = bestColor.className;
+    let outfit = bestOutfit.className;
+
+    // confidence display
+    colorTheory.innerHTML = `
+    <h3>${color} - ${outfit}</h3>
+    <p>Color Confidence: ${(bestColor.probability*100).toFixed(1)}%</p>
+    <p>Outfit Confidence: ${(bestOutfit.probability*100).toFixed(1)}%</p>
+    `;
+
+    // recommendation by color
+    if(color=="black"){
+        recommendText.innerHTML=`
+        Pants : Grey / Black<br>
+        Shoes : White sneakers<br>
+        Hat : Beanie<br>
+        Mask : Black
         `;
-        recommendText.innerHTML = `
-        Pants: Grey slim fit<br>
-        Hat: Black bucket hat<br>
-        Shoes: White sneakers<br>
-        Mask: Matte black<br>
+    }
+
+    else if(color=="white"){
+        recommendText.innerHTML=`
+        Pants : Light blue jeans<br>
+        Shoes : White sneakers<br>
+        Hat : Beige cap<br>
+        Mask : White
         `;
-    } else {
-        colorTheory.innerHTML = `
-        <h3>White Outfit Meaning</h3>
-        <p>White represents purity, simplicity, and clarity. Perfect for summer looks,
-        casual clean aesthetics, and soft minimal fashion.</p>
+    }
+
+    else if(color=="blue"){
+        recommendText.innerHTML=`
+        Pants : Black jeans<br>
+        Shoes : White sneakers<br>
+        Hat : Navy cap<br>
+        Mask : Dark
         `;
-        recommendText.innerHTML = `
-        Pants: Light blue jeans<br>
-        Hat: Beige cap<br>
-        Shoes: Cream sneakers<br>
-        Mask: Soft white<br>
+    }
+
+    else if(color=="yellow"){
+        recommendText.innerHTML=`
+        Pants : Black / Brown<br>
+        Shoes : White sneakers<br>
+        Hat : Neutral cap<br>
+        Mask : Light
+        `;
+    }
+
+    else if(color=="pink"){
+        recommendText.innerHTML=`
+        Pants : White / Light grey<br>
+        Shoes : Clean sneakers<br>
+        Hat : Soft tone cap<br>
+        Mask : White / Pink
+        `;
+    }
+
+    else{
+        recommendText.innerHTML=`
+        Pants : Neutral pants<br>
+        Shoes : Sneakers<br>
+        Hat : Cap<br>
+        Mask : Match color
         `;
     }
 
     recommendationBox.classList.add("show");
 }
+
 </script>
 
-</html>
-
-<body style="background:black;color:white;text-align:center;">
-<h1>Style Maker ✨</h1>
-<h2>AI loading...</h2>
 </body>
-
-
+</html>
