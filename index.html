@@ -96,7 +96,7 @@ button:hover{
     width:250px;
     border-radius:25px;
     margin-top:10px;
-    transform:skewX(8deg);
+    transform:skewX(0deg);
     object-fit:cover;
     box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
@@ -107,6 +107,10 @@ button:hover{
     opacity:0;
     transform:translateX(100px);
     transition:0.8s;
+    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.2);
+    border-radius:20px;
+    padding:15px;
 }
 .recommendation.show{
     opacity:1;
@@ -152,8 +156,10 @@ button:hover{
 <body>
 
 <!-- intro -->
-<div id="intro" onclick="startApp()">
+<div id="intro">
+
 <h1>Kelompok 5</h1>
+
 <div style="line-height:1.8; margin-top:15px;">
 - Regina Maheswari Nathania (35)<br>
 - Mirelle Naurin Rasya (22)<br>
@@ -162,8 +168,17 @@ button:hover{
 - Muhammad Quraisy Dhinezad (28)<br>
 - Zidane Muhammad Faris (39)
 </div>
-<p style="margin-top:30px; opacity:0.7;">klik untuk lanjut</p>
+
+<p id="modelStatus" style="margin-top:30px; opacity:0.7;">
+Loading AI Model...
+</p>
+
+<button onclick="startApp()" id="startBtn" style="display:none;">
+Start
+</button>
+
 </div>
+
 
 <!-- main web -->
 <div class="container">
@@ -206,16 +221,31 @@ Analyzing outfit...
 let colorModel, outfitModel;
 let modelsReady = false;
 
+function startApp(){
+    if(!modelsReady){
+        alert("Model masih loading...");
+        return;
+    }
+
+    document.getElementById("intro").style.display="none"
+}
+
+
 window.onload = async function(){
+
+    document.getElementById("modelStatus").innerText = "Loading AI Model...";
+
     colorModel = await tmImage.load("color/model.json", "color/metadata.json");
     outfitModel = await tmImage.load("outfit/model.json", "outfit/metadata.json");
+
     modelsReady = true;
+
+    document.getElementById("modelStatus").innerText = "AI Ready";
+    document.getElementById("startBtn").style.display = "inline-block";
+
     console.log("Models Loaded");
 }
 
-function startApp(){
-    document.getElementById("intro").style.display="none"
-}
 
 const uploadInput = document.getElementById("upload")
 const previewImage = document.getElementById("previewImage")
@@ -234,10 +264,13 @@ uploadInput.addEventListener("change", function(event){
         reader.onload = function(e){
             previewImage.src = e.target.result
 
-            previewImage.onload = function(){
-                previewImage.classList.add("show")
-                simulateAI()
-            }
+           previewImage.onload = null;
+previewImage.onload = () => {
+    previewImage.classList.add("show");
+    simulateAI();
+};
+
+
         }
 
         reader.readAsDataURL(file)
@@ -250,12 +283,28 @@ function openCamera(){
 
 async function simulateAI(){
 
+    colorTheory.innerHTML = "";
+    recommendText.innerHTML = "";
+
     if(!modelsReady){
         alert("Model masih loading...");
         return;
     }
 
+    loadingText.innerText = "Analyzing outfit...";
     loadingText.style.display="block";
+
+    // ensure image ready
+   if (!previewImage.complete) {
+    await new Promise(resolve => {
+        previewImage.addEventListener("load", resolve, { once: true });
+    });
+}
+
+
+    // wait render properly
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise(resolve => requestAnimationFrame(resolve));
 
     const predictionColor = await colorModel.predict(previewImage);
     const predictionOutfit = await outfitModel.predict(previewImage);
@@ -279,7 +328,16 @@ async function simulateAI(){
     let color = bestColor.className;
     let outfit = bestOutfit.className;
 
-    const theory = getColorTheory(color);
+    let theory;
+
+    if(typeof getColorTheory === "function"){
+        theory = getColorTheory(color);
+    }else{
+        theory = {
+            title: color,
+            desc: "No description available"
+        };
+    }
 
     colorTheory.innerHTML = `
     <h3>${theory.title} - ${outfit}</h3>
@@ -307,8 +365,12 @@ async function simulateAI(){
         recommendText.innerHTML=`Neutral outfit`;
     }
 
+    // animation fix
+    recommendationBox.classList.remove("show");
+    void recommendationBox.offsetWidth;
     recommendationBox.classList.add("show");
 }
+
 
 </script>
 
